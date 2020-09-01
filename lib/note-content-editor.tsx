@@ -846,7 +846,7 @@ class NoteContentEditor extends Component<Props> {
             value={content}
           />
         )}
-        {this.matchesInNote.length && (
+        {!!this.matchesInNote.length && (
           <div className="search-results">
             {this.matchesInNote.length} Results
             <IconButton
