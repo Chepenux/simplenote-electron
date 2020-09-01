@@ -1,6 +1,6 @@
 import React, { Component, createRef } from 'react';
 import { connect } from 'react-redux';
-import NoteContentEditor from '../note-content-editor';
+import NoteContentEditor from '../editor/note-content-editor';
 import SimplenoteCompactLogo from '../icons/simplenote-compact';
 
 import * as S from '../state';

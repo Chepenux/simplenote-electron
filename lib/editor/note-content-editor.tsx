@@ -7,17 +7,19 @@ import Monaco, {
 } from 'react-monaco-editor';
 import { editor as Editor, Selection, SelectionDirection } from 'monaco-editor';
 
-import actions from './state/actions';
-import * as selectors from './state/selectors';
-import { getTerms } from './utils/filter-notes';
-import { isSafari } from './utils/platform';
+import actions from '../state/actions';
+import * as selectors from '../state/selectors';
+import { getTerms } from '../utils/filter-notes';
+import { isSafari } from '../utils/platform';
 import {
   withCheckboxCharacters,
   withCheckboxSyntax,
-} from './utils/task-transform';
+} from '../utils/task-transform';
 
-import * as S from './state';
-import * as T from './types';
+import './style.scss';
+
+import * as S from '../state';
+import * as T from '../types';
 
 const SPEED_DELAY = 120;
 
@@ -65,6 +67,7 @@ type OwnState = {
   editor: 'fast' | 'full';
   noteId: T.EntityId | null;
   overTodo: boolean;
+  selectedSearchMatchIndex: number | null;
 };
 
 class NoteContentEditor extends Component<Props> {
@@ -72,12 +75,14 @@ class NoteContentEditor extends Component<Props> {
   editor: Editor.IStandaloneCodeEditor | null = null;
   monaco: Monaco | null = null;
   decorations: string[] = [];
+  matchesInNote: [] = [];
 
   state: OwnState = {
     content: '',
     editor: 'fast',
     noteId: null,
     overTodo: false,
+    selectedSearchMatchIndex: null,
   };
 
   static getDerivedStateFromProps(props: Props, state: OwnState) {
@@ -113,6 +118,7 @@ class NoteContentEditor extends Component<Props> {
     }, SPEED_DELAY);
     this.props.storeFocusEditor(this.focusEditor);
     this.props.storeHasFocus(this.hasFocus);
+    this.toggleShortcuts(true);
   }
 
   componentWillUnmount() {
@@ -121,7 +127,35 @@ class NoteContentEditor extends Component<Props> {
     }
     window.electron?.removeListener('editorCommand');
     window.removeEventListener('input', this.handleUndoRedo, true);
+    this.toggleShortcuts(false);
   }
+
+  toggleShortcuts = (doEnable: boolean) => {
+    if (doEnable) {
+      window.addEventListener('keydown', this.handleShortcut, true);
+    } else {
+      window.removeEventListener('keydown', this.handleShortcut, true);
+    }
+  };
+
+  handleShortcut = (event: KeyboardEvent) => {
+    const { ctrlKey, code, metaKey, shiftKey } = event;
+
+    const cmdOrCtrl = ctrlKey || metaKey;
+    if (cmdOrCtrl && shiftKey && code === 'KeyG') {
+      this.setPrevSearchSelection();
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
+    if (cmdOrCtrl && !shiftKey && code === 'KeyG') {
+      this.setNextSearchSelection();
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+  };
 
   componentDidUpdate(prevProps: Props) {
     const {
@@ -169,16 +203,17 @@ class NoteContentEditor extends Component<Props> {
       this.state.editor === 'full' &&
       prevProps.searchQuery !== this.props.searchQuery
     ) {
+      this.setState({ selectedSearchMatchIndex: null });
       this.setDecorators();
     }
   }
 
   setDecorators = () => {
-    const searchMatches = this.searchMatches() ?? [];
+    this.matchesInNote = this.searchMatches() ?? [];
     const titleDecoration = this.getTitleDecoration() ?? [];
 
     this.decorations = this.editor.deltaDecorations(this.decorations, [
-      ...searchMatches,
+      ...this.matchesInNote,
       ...titleDecoration,
     ]);
   };
@@ -473,6 +508,9 @@ class NoteContentEditor extends Component<Props> {
 
     window.electron?.receive('editorCommand', (command) => {
       switch (command.action) {
+        case 'findAgain':
+          this.setNextSearchSelection();
+          return;
         case 'insertChecklist':
           editor.trigger('editorCommand', 'insertChecklist', null);
           return;
@@ -730,6 +768,27 @@ class NoteContentEditor extends Component<Props> {
     editNote(noteId, { content: withCheckboxSyntax(content) });
   };
 
+  setNextSearchSelection = () => {
+    const { selectedSearchMatchIndex: index } = this.state;
+    const newIndex = (index || 0) + 1;
+    this.setSearchSelection(newIndex % this.matchesInNote.length);
+  };
+
+  setPrevSearchSelection = () => {
+    const { selectedSearchMatchIndex: index } = this.state;
+    const newIndex =
+      (index || 0) === 0 ? this.matchesInNote.length - 1 : index - 1;
+    this.setSearchSelection(newIndex);
+  };
+
+  setSearchSelection = (index) => {
+    const range = this.matchesInNote[index].range;
+    this.setState({ selectedSearchMatchIndex: index });
+    this.editor.setSelection(range);
+    this.editor.revealLineInCenter(range.startLineNumber);
+    this.focusEditor();
+  };
+
   render() {
     const { fontSize, noteId, theme } = this.props;
     const { content, editor, overTodo } = this.state;
@@ -786,6 +845,13 @@ class NoteContentEditor extends Component<Props> {
             }}
             value={content}
           />
+        )}
+        {this.matchesInNote.length && (
+          <div className="search-results">
+            {this.matchesInNote.length}Results
+            <button onClick={this.setPrevSearchSelection}>Prev</button>
+            <button onClick={this.setNextSearchSelection}>Next</button>
+          </div>
         )}
       </div>
     );
