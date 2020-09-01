@@ -325,4 +325,14 @@
       }
     }
   }
+
+  .search-results {
+    color: $studio-gray-10;
+    border-color: $studio-gray-80;
+    background-color: $studio-gray-90;
+
+    button svg {
+      fill: $studio-simplenote-blue-30;
+    }
+  }
 }
