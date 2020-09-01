@@ -104,6 +104,15 @@
 
   button {
     float: right;
+    padding-right: 15px;
+
+    svg {
+      fill: $studio-simplenote-blue-50;
+    }
+  }
+  button.search-results-prev {
+    transform: scaleX(-1);
+    padding-left: 15px;
   }
 
   @media only screen and (max-width: $single-column) {

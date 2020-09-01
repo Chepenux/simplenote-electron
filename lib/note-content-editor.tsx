@@ -15,6 +15,8 @@ import {
   withCheckboxCharacters,
   withCheckboxSyntax,
 } from './utils/task-transform';
+import IconButton from './icon-button';
+import ChevronRightIcon from './icons/chevron-right';
 
 import * as S from './state';
 import * as T from './types';
@@ -847,8 +849,17 @@ class NoteContentEditor extends Component<Props> {
         {this.matchesInNote.length && (
           <div className="search-results">
             {this.matchesInNote.length} Results
-            <button onClick={this.setPrevSearchSelection}>Prev</button>
-            <button onClick={this.setNextSearchSelection}>Next</button>
+            <IconButton
+              icon={<ChevronRightIcon />}
+              onClick={this.setNextSearchSelection}
+              title="Next"
+            />
+            <IconButton
+              icon={<ChevronRightIcon />}
+              onClick={this.setPrevSearchSelection}
+              className="search-results-prev"
+              title="Prev"
+            />
           </div>
         )}
       </div>
