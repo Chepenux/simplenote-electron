@@ -16,8 +16,6 @@ import {
   withCheckboxSyntax,
 } from '../utils/task-transform';
 
-import './style.scss';
-
 import * as S from '../state';
 import * as T from '../types';
 

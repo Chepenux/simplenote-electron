@@ -89,6 +89,15 @@
   display: none !important;
 }
 
+.search-results {
+  width: 100%;
+  position: fixed;
+  height: 56px;
+  background: red;
+  bottom: 0;
+  z-index: 111111111111111;
+}
+
 .note-detail-textarea .note-content-editor-shell.cursor-pointer div {
   cursor: pointer;
 }
