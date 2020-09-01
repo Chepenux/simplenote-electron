@@ -7,17 +7,17 @@ import Monaco, {
 } from 'react-monaco-editor';
 import { editor as Editor, Selection, SelectionDirection } from 'monaco-editor';
 
-import actions from '../state/actions';
-import * as selectors from '../state/selectors';
-import { getTerms } from '../utils/filter-notes';
-import { isSafari } from '../utils/platform';
+import actions from './state/actions';
+import * as selectors from './state/selectors';
+import { getTerms } from './utils/filter-notes';
+import { isSafari } from './utils/platform';
 import {
   withCheckboxCharacters,
   withCheckboxSyntax,
-} from '../utils/task-transform';
+} from './utils/task-transform';
 
-import * as S from '../state';
-import * as T from '../types';
+import * as S from './state';
+import * as T from './types';
 
 const SPEED_DELAY = 120;
 
