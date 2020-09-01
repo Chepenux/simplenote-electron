@@ -846,7 +846,7 @@ class NoteContentEditor extends Component<Props> {
         )}
         {this.matchesInNote.length && (
           <div className="search-results">
-            {this.matchesInNote.length}Results
+            {this.matchesInNote.length} Results
             <button onClick={this.setPrevSearchSelection}>Prev</button>
             <button onClick={this.setNextSearchSelection}>Next</button>
           </div>
